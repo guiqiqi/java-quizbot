@@ -13,7 +13,7 @@ import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.ResourceUtils;
 
@@ -38,20 +38,20 @@ public class ApplicationConfig {
     }
 
     /**
-     * Create JdbcClient as a singleton bean and executing database creation.
+     * Create JdbcTemplate as a singleton bean and executing database creation.
      * @param data source wired from dataSource
-     * @return created JdbcClient
+     * @return created JdbcTemplate
      * @throws IOException if `schema.sql` cannot been found in resources
      */
     @Bean
-    public JdbcClient jdbcClient(DataSource dataSource) throws IOException {
-        JdbcClient jdbcClient = JdbcClient.create(dataSource);
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) throws IOException {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         File sqlFile = ResourceUtils.getFile("classpath:schema.sql");
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sqlFile)));
         String schema = reader.lines().collect(Collectors.joining("\n"));
         reader.close();
         for (String query : schema.split(";"))
-            jdbcClient.sql(query).query();
-        return jdbcClient;
+            jdbcTemplate.execute(query);
+        return jdbcTemplate;
     }
 }

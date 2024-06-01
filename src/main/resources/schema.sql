@@ -1,10 +1,8 @@
-CREATE DATABASE IF NOT EXISTS quizbot;
-
 -- Create Users table
 CREATE TABLE IF NOT EXISTS Users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     telegram VARCHAR(255) NOT NULL UNIQUE,
-    nickname VARCHAR(255) NOT NULL,
+    nickname VARCHAR(255) NOT NULL
 );
 
 -- Create Questions table
