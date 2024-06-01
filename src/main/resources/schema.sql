@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS Options (
     id INT AUTO_INCREMENT PRIMARY KEY,
     content TEXT NOT NULL,
     mark INT NOT NULL DEFAULT 1,
-    correctness BOOLEAN NOT NULL DEFAULT 1
+    correctness BOOLEAN NOT NULL DEFAULT 1,
+    question INT NOT NULL,
+    FOREIGN KEY (question) REFERENCES Questions(id) ON DELETE CASCADE
 );
 
 -- Create AnswerHistory table
@@ -27,6 +29,7 @@ CREATE TABLE IF NOT EXISTS AnswerHistory (
     id INT AUTO_INCREMENT PRIMARY KEY,
     answerer INT NOT NULL,
     question INT NOT NULL,
+    tag VARCHAR(255) NOT NULL,
     earned INT NOT NULL DEFAULT 0,
     FOREIGN KEY (answerer) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (question) REFERENCES Questions(id) ON DELETE CASCADE
