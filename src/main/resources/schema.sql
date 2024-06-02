@@ -24,13 +24,15 @@ CREATE TABLE IF NOT EXISTS Options (
     FOREIGN KEY (question) REFERENCES Questions(id) ON DELETE CASCADE
 );
 
--- Create AnswerHistory table
-CREATE TABLE IF NOT EXISTS AnswerHistory (
+-- Create AnswerHistories table
+CREATE TABLE IF NOT EXISTS AnswerHistories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     answerer INT NOT NULL,
     question INT NOT NULL,
+    `option` INT NOT NULL,
     tag VARCHAR(255) NOT NULL,
     earned INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (`option`) REFERENCES Options(id) ON DELETE CASCADE,
     FOREIGN KEY (answerer) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (question) REFERENCES Questions(id) ON DELETE CASCADE
 );
