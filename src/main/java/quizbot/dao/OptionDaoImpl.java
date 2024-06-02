@@ -25,7 +25,7 @@ public class OptionDaoImpl implements OptionDao {
 
     @Override
     public Option create(String content, Integer mark, Boolean correctness, Question question) {
-        String query = "INSERT INTO Options (content, mark, correctness) VALUES (?, ?, ?)";
+        String query = "INSERT INTO Options (content, mark, correctness, question) VALUES (?, ?, ?, ?)";
         KeyHolder holder = new GeneratedKeyHolder();
         this.template.update(connection -> {
             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
