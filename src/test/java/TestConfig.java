@@ -9,6 +9,7 @@ import quizbot.dao.QuestionDao;
 import quizbot.dao.QuestionDaoImpl;
 import quizbot.dao.UserDao;
 import quizbot.dao.UserDaoImpl;
+import quizbot.form.QuestionFormManager;
 
 @Configuration
 public class TestConfig {
@@ -30,5 +31,10 @@ public class TestConfig {
     @Bean
     public AnswerHistoryDao answerHistoryDao() {
         return new AnswerHistoryDaoImpl();
+    }
+
+    @Bean
+    public QuestionFormManager questionFormManager() {
+        return new QuestionFormManager();
     }
 }
