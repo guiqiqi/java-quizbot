@@ -18,3 +18,6 @@ buildNumber.properties
 
 # MacOS's poop
 .DS_Store
+
+# Project config includes key informations
+config.properties
