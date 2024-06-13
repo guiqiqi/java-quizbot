@@ -20,6 +20,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.ResourceUtils;
 
+import quizbot.dao.AnswerHistoryDaoImpl;
+import quizbot.dao.OptionDaoImpl;
+import quizbot.dao.QuestionDaoImpl;
+import quizbot.dao.UserDaoImpl;
+import quizbot.form.QuestionFormManager;
+
 @Configuration
 public class ApplicationConfig {
     @Autowired
@@ -72,5 +78,17 @@ public class ApplicationConfig {
         for (String query : schema.split(";"))
             jdbcTemplate.execute(query);
         return jdbcTemplate;
+    }
+
+    /**
+     * Create question service for controller.
+     * @return created question service
+     */
+    @Bean
+    public QuestionService questionService() {
+        return new QuestionService(
+                new UserDaoImpl(), new QuestionDaoImpl(),
+                new OptionDaoImpl(), new AnswerHistoryDaoImpl(),
+                new QuestionFormManager());
     }
 }
