@@ -15,8 +15,10 @@ import quizbot.dao.UserDao;
 import quizbot.form.QuestionForm;
 import quizbot.form.QuestionFormManager;
 import quizbot.form.QuestionFormStatus;
+import quizbot.form.QuestionFormManager.OperationNotPermitted;
 import quizbot.model.AnswerHistory;
 import quizbot.model.Question;
+import quizbot.model.QuestionWithOptions;
 import quizbot.model.Option;
 import quizbot.model.User;
 
@@ -60,12 +62,24 @@ public class QuestionService {
      * @param user who owned questions
      * @return random question or nothing
      */
-    public Optional<Question> randomQuestion(User user) {
+    public Optional<QuestionWithOptions> randomQuestion(User user) {
         List<Question> questions = this.questionDao.listAll(user);
+        return this.selectQuestionFromList(questions);
+    }
+
+    /**
+     * Select an random question from question list and query related options.
+     * @param questions is all questions selected for given user
+     * @return QuestionWithOptions related to given question
+     */
+    private Optional<QuestionWithOptions> selectQuestionFromList(List<Question> questions) {
         if (questions.isEmpty())
             return Optional.empty();
         Random rand = new Random();
-        return Optional.of(questions.get(rand.nextInt(questions.size())));
+        Question question = questions.get(rand.nextInt(questions.size()));
+        List<Option> options = this.optionDao.listByQuestion(question);
+        QuestionWithOptions form = new QuestionWithOptions(question, options);
+        return Optional.of(form);
     }
 
     /**
@@ -73,12 +87,9 @@ public class QuestionService {
      * @param user who owned questions
      * @return random question or nothing
      */
-    public Optional<Question> randomQuestion(User user, String tag) {
+    public Optional<QuestionWithOptions> randomQuestion(User user, String tag) {
         List<Question> questions = this.questionDao.listByTag(user, tag);
-        if (questions.isEmpty())
-            return Optional.empty();
-        Random rand = new Random();
-        return Optional.of(questions.get(rand.nextInt(questions.size())));
+        return this.selectQuestionFromList(questions);
     }
 
     /**
@@ -126,5 +137,36 @@ public class QuestionService {
     public QuestionFormStatus formStatus(User user) {
         QuestionForm form = this.formManager.getQuestionForm(user);
         return form.status();
+    }
+
+    /**
+     * Set data to question form during to its status.
+     * @param user who is operating on question form
+     * @param data its going to be set on form
+     * @return finished question form status, if something wrong in submitting, return nothing
+     */
+    public Optional<QuestionFormStatus> addData2QuestionForm(User user, String data) {
+        QuestionForm form = this.formManager.getQuestionForm(user);
+        try {
+            switch (form.status()) {
+                case QuestionFormStatus.WaitingQuestion:
+                    this.formManager.setQuestion(user, data);
+                    break;
+                case QuestionFormStatus.WaitingTag:
+                    this.formManager.setTag(user, data);
+                    break;
+                case QuestionFormStatus.WaitingCorrectOption:
+                    this.formManager.setCorrectOption(user, data);
+                    break;
+                case QuestionFormStatus.AddingWrongOptions:
+                    this.formManager.addWrongOption(user, data);
+                    break;
+                default:
+                    break;
+            }
+        } catch (OperationNotPermitted error) {
+            return Optional.empty();
+        }
+        return Optional.of(form.status());
     }
 }
