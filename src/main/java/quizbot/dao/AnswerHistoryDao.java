@@ -20,4 +20,10 @@ public interface AnswerHistoryDao {
      * @return listed answer histories
      */
     List<AnswerHistory> listByUser(User user);
+
+    /**
+     * Clear all user's answer historires.
+     * @param user who answered questions
+     */
+    void clear(User user);
 }

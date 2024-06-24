@@ -119,6 +119,15 @@ public class TestService {
 
     @Test
     @Order(7)
+    public void testResetScore() {
+        User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
+        this.service.resetScore(user);
+        Integer score = this.service.calculateScore(user, questionTag);
+        assertEquals(0, score);
+    }
+
+    @Test
+    @Order(8)
     public void testRandomQuestion() {
         User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
         Optional<QuestionWithOptions> questionWithOptions = this.service.randomQuestion(user);
