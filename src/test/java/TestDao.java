@@ -32,7 +32,7 @@ import quizbot.model.Question;
 import quizbot.model.User;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { ApplicationConfig.class, TestConfig.class })
+@ContextConfiguration(classes = { ApplicationConfig.class })
 @ActiveProfiles("development")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestDao {
