@@ -51,4 +51,10 @@ public class AnswerHistoryDaoImpl implements AnswerHistoryDao {
         RowMapper<AnswerHistory> mapper = new BeanPropertyRowMapper<>(AnswerHistory.class);
         return this.template.query(query, mapper, user.getId());
     }
+
+    @Override
+    public void clear(User user) {
+        String query = "DELETE FROM AnswerHistories WHERE answerer = ?";
+        this.template.update(query, user.getId());
+    }
 }

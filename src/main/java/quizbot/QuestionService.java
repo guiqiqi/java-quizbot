@@ -114,6 +114,14 @@ public class QuestionService {
     }
 
     /**
+     * Reset user's total score.
+     * @param user who answered questions
+     */
+    public void resetScore(User user) {
+        this.answerHistoryDao.clear(user);
+    }
+
+    /**
      * Answer a question with specified option and create corresponded AnswerHistory.
      * @param user who are answering question
      * @param questionId is question's id returned from telegram
