@@ -20,9 +20,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.ResourceUtils;
 
+import quizbot.dao.AnswerHistoryDao;
 import quizbot.dao.AnswerHistoryDaoImpl;
+import quizbot.dao.OptionDao;
 import quizbot.dao.OptionDaoImpl;
+import quizbot.dao.QuestionDao;
 import quizbot.dao.QuestionDaoImpl;
+import quizbot.dao.UserDao;
 import quizbot.dao.UserDaoImpl;
 import quizbot.form.QuestionFormManager;
 
@@ -81,14 +85,56 @@ public class ApplicationConfig {
     }
 
     /**
+     * Create user DAO.
+     * @return created question DAO
+     */
+    @Bean
+    public UserDao userDao() {
+        return new UserDaoImpl();
+    }
+
+    /**
+     * Create question DAO.
+     * @return created question DAO
+     */
+    @Bean
+    public QuestionDao questionDao() {
+        return new QuestionDaoImpl();
+    }
+
+    /**
+     * Create option DAO.
+     * @return created option DAO
+     */
+    @Bean
+    public OptionDao optionDao() {
+        return new OptionDaoImpl();
+    }
+
+    /**
+     * Create answer history DAO.
+     * @return created answer history DAO
+     */
+    @Bean
+    public AnswerHistoryDao answerHistoryDao() {
+        return new AnswerHistoryDaoImpl();
+    }
+
+    /**
+     * Create question form manager object.
+     * @return created question form manager
+     */
+    @Bean
+    public QuestionFormManager questionFormManager() {
+        return new QuestionFormManager();
+    }
+
+    /**
      * Create question service for controller.
      * @return created question service
      */
     @Bean
     public QuestionService questionService() {
-        return new QuestionService(
-                new UserDaoImpl(), new QuestionDaoImpl(),
-                new OptionDaoImpl(), new AnswerHistoryDaoImpl(),
-                new QuestionFormManager());
+        return new QuestionService();
     }
 }

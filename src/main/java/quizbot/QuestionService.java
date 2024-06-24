@@ -1,5 +1,6 @@
 package quizbot;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import quizbot.dao.AnswerHistoryDao;
 import quizbot.dao.OptionDao;
@@ -24,25 +26,20 @@ import quizbot.model.User;
 
 @Service
 public class QuestionService {
-    private final UserDao userDao;
-    private final QuestionDao questionDao;
-    private final OptionDao optionDao;
-    private final AnswerHistoryDao answerHistoryDao;
-    private final QuestionFormManager formManager;
+    @Autowired
+    private UserDao userDao;
 
     @Autowired
-    public QuestionService(
-            UserDao userDao,
-            QuestionDao questionDao,
-            OptionDao optionDao,
-            AnswerHistoryDao answerHistoryDao,
-            QuestionFormManager formManager) {
-        this.userDao = userDao;
-        this.questionDao = questionDao;
-        this.optionDao = optionDao;
-        this.answerHistoryDao = answerHistoryDao;
-        this.formManager = formManager;
-    }
+    private QuestionDao questionDao;
+
+    @Autowired
+    private OptionDao optionDao;
+
+    @Autowired
+    private AnswerHistoryDao answerHistoryDao;
+
+    @Autowired
+    private QuestionFormManager formManager;
 
     /**
      * Find user by its telegram id or create a new one.
@@ -62,6 +59,7 @@ public class QuestionService {
      * @param user who owned questions
      * @return random question or nothing
      */
+    @Transactional
     public Optional<QuestionWithOptions> randomQuestion(User user) {
         List<Question> questions = this.questionDao.listAll(user);
         return this.selectQuestionFromList(questions);
@@ -87,6 +85,7 @@ public class QuestionService {
      * @param user who owned questions
      * @return random question or nothing
      */
+    @Transactional
     public Optional<QuestionWithOptions> randomQuestion(User user, String tag) {
         List<Question> questions = this.questionDao.listByTag(user, tag);
         return this.selectQuestionFromList(questions);
@@ -168,5 +167,39 @@ public class QuestionService {
             return Optional.empty();
         }
         return Optional.of(form.status());
+    }
+
+    /**
+     * Submit wrong options added question form to database and reset user form status.
+     * If submitting success, return created question and options object; if not, return nothing.
+     * @param user who is operating on question form
+     * @return submitted question form
+     */
+    @Transactional
+    public Optional<QuestionWithOptions> submitQuestionForm(User user) {
+        QuestionForm form = this.formManager.getQuestionForm(user);
+
+        // If current status not euqals to last (which is AddingWrongOptions) status submitting is not allowed
+        if (form.status() != QuestionFormStatus.AddingWrongOptions)
+            return Optional.empty();
+        List<String> options = form.getOptions();
+
+        Question question = this.questionDao.create(form.getTag(), form.getQuestion(), user);
+        List<Option> createdOptions = new LinkedList<>();
+        for (Integer index = 0; index < options.size(); index++) {
+            // The very first option is the correct one
+            String option = options.get(index);
+            Option creadtedOption;
+            if (index == 0)
+                creadtedOption = this.optionDao.create(option, 1, true, question);
+            else
+                creadtedOption = this.optionDao.create(option, 1, false, question);
+            createdOptions.add(creadtedOption);
+        }
+
+        // Clear user current submitted form in memory
+        this.formManager.remove(user);
+        QuestionWithOptions questionWithOptions = new QuestionWithOptions(question, createdOptions);
+        return Optional.of(questionWithOptions);
     }
 }
