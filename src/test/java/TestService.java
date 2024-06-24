@@ -25,6 +25,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import quizbot.ApplicationConfig;
 import quizbot.QuestionService;
 import quizbot.form.QuestionFormStatus;
+import quizbot.model.AnswerHistory;
+import quizbot.model.Option;
+import quizbot.model.Question;
 import quizbot.model.QuestionWithOptions;
 import quizbot.model.User;
 
@@ -86,6 +89,48 @@ public class TestService {
         Optional<QuestionWithOptions> createdQuestion = this.service.submitQuestionForm(user);
         assertTrue(createdQuestion.isPresent());
         assertEquals(createdQuestion.get().getQuestion().getContent(), questionText);
+    }
+
+    @Test
+    @Order(4)
+    public void testZeroScore() {
+        User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
+        Integer score = this.service.calculateScore(user);
+        assertEquals(score, 0);
+    }
+
+    @Test
+    @Order(5)
+    public void testAnswerQuestion() {
+        User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
+        Optional<AnswerHistory> hitsory = this.service.answerQuestion(user, 1, 1);
+        assertTrue(hitsory.isPresent());
+    }
+
+    @Test
+    @Order(6)
+    public void testScoreQuerying() {
+        User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
+        Integer score = this.service.calculateScore(user);
+        assertEquals(1, score);
+        Integer taggedScore = this.service.calculateScore(user, questionTag);
+        assertEquals(1, taggedScore);
+    }
+
+    @Test
+    @Order(7)
+    public void testRandomQuestion() {
+        User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
+        Optional<QuestionWithOptions> questionWithOptions = this.service.randomQuestion(user);
+        assertTrue(questionWithOptions.isPresent());;
+        Question question = questionWithOptions.get().getQuestion();
+        List<Option> options = questionWithOptions.get().getOptions();
+        assertEquals(question.getTag(), questionTag);
+        assertEquals(options.size(), wrongOptions.size() + 1);
+        
+        // Test random question querying with tag
+        questionWithOptions = this.service.randomQuestion(user, questionTag);
+        assertTrue(questionWithOptions.isPresent());
     }
 
     /**
