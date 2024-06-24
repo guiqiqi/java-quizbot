@@ -109,7 +109,7 @@ public class QuestionService {
     public Integer calculateScore(User user, String tag) {
         List<AnswerHistory> histories = this.answerHistoryDao.listByUser(user);
         return histories.stream()
-                .filter(history -> history.getTag() == tag)
+                .filter(history -> history.getTag().equals(tag))
                 .collect(Collectors.summingInt(AnswerHistory::getEarned));
     }
 
