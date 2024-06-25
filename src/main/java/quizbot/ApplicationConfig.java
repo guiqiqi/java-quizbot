@@ -22,11 +22,9 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.ResourceUtils;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
-import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
-import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import quizbot.controller.ClearScoreCommand;
 import quizbot.controller.EchoCommand;
 import quizbot.controller.RandomQuestionCommand;
 import quizbot.controller.UpdateHandler;
@@ -38,15 +36,18 @@ import quizbot.form.QuestionFormManager;
 
 @Configuration
 @Import({
-    UserDaoImpl.class,
-    QuestionDaoImpl.class,
-    OptionDaoImpl.class,
-    AnswerHistoryDaoImpl.class,
-    QuestionFormManager.class,
-    QuestionService.class,
-    EchoCommand.class,
-    RandomQuestionCommand.class,
-    UpdateHandler.class
+        UserDaoImpl.class,
+        QuestionDaoImpl.class,
+        OptionDaoImpl.class,
+        AnswerHistoryDaoImpl.class,
+        QuestionFormManager.class,
+        QuestionService.class,
+
+        // TODO: add more commands support
+        EchoCommand.class,
+        RandomQuestionCommand.class,
+        ClearScoreCommand.class,
+        UpdateHandler.class
 })
 public class ApplicationConfig {
     @Autowired
@@ -121,20 +122,5 @@ public class ApplicationConfig {
     public TelegramClient telegramClient() throws IOException {
         Properties properties = this.properties;
         return new OkHttpTelegramClient(properties.getProperty("telegram.bot.token"));
-    }
-
-    /**
-     * Initalize telegram bot application with update message handler.
-     * @return initialized telegram bot application
-     * @param consumer autowired from updateHandler
-     * @throws TelegramApiException if error occured in registering of application
-     */
-    @Bean(value = "bot")
-    public TelegramBotsLongPollingApplication botApplication(
-            @Autowired LongPollingUpdateConsumer consumer)
-            throws TelegramApiException {
-        TelegramBotsLongPollingApplication application = new TelegramBotsLongPollingApplication();
-        application.registerBot(this.properties.getProperty("telegram.bot.token"), consumer);
-        return application;
     }
 }

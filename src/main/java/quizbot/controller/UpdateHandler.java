@@ -27,12 +27,16 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
             @Autowired TelegramClient client,
             @Autowired QuestionService service,
             @Autowired EchoCommand echoCommand,
-            @Autowired RandomQuestionCommand randomQuestionCommand) {
+            @Autowired RandomQuestionCommand randomQuestionCommand,
+            @Autowired ClearScoreCommand clearScoreCommand) {
         this.client = client;
         this.service = service;
         this.commands = new HashMap<>();
+
+        // TODO: add more commands support
         this.commands.put(EchoCommand.class, echoCommand);
         this.commands.put(RandomQuestionCommand.class, randomQuestionCommand);
+        this.commands.put(ClearScoreCommand.class, clearScoreCommand);
     }
 
     /**
@@ -48,6 +52,8 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
         // TODO: add more commands support
         if (message.getText().startsWith("/random"))
             command = this.commands.get(RandomQuestionCommand.class);
+        else if (message.getText().equals("/clear"))
+            command = this.commands.get(ClearScoreCommand.class);
         else
             command = this.commands.get(EchoCommand.class);
 
