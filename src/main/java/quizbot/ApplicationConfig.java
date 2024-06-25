@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -26,18 +27,27 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import quizbot.controller.EchoCommand;
+import quizbot.controller.RandomQuestionCommand;
 import quizbot.controller.UpdateHandler;
-import quizbot.dao.AnswerHistoryDao;
 import quizbot.dao.AnswerHistoryDaoImpl;
-import quizbot.dao.OptionDao;
 import quizbot.dao.OptionDaoImpl;
-import quizbot.dao.QuestionDao;
 import quizbot.dao.QuestionDaoImpl;
-import quizbot.dao.UserDao;
 import quizbot.dao.UserDaoImpl;
 import quizbot.form.QuestionFormManager;
 
 @Configuration
+@Import({
+    UserDaoImpl.class,
+    QuestionDaoImpl.class,
+    OptionDaoImpl.class,
+    AnswerHistoryDaoImpl.class,
+    QuestionFormManager.class,
+    QuestionService.class,
+    EchoCommand.class,
+    RandomQuestionCommand.class,
+    UpdateHandler.class
+})
 public class ApplicationConfig {
     @Autowired
     @Qualifier(value = "properties")
@@ -103,60 +113,6 @@ public class ApplicationConfig {
     }
 
     /**
-     * Create user DAO.
-     * @return created question DAO
-     */
-    @Bean
-    public UserDao userDao() {
-        return new UserDaoImpl();
-    }
-
-    /**
-     * Create question DAO.
-     * @return created question DAO
-     */
-    @Bean
-    public QuestionDao questionDao() {
-        return new QuestionDaoImpl();
-    }
-
-    /**
-     * Create option DAO.
-     * @return created option DAO
-     */
-    @Bean
-    public OptionDao optionDao() {
-        return new OptionDaoImpl();
-    }
-
-    /**
-     * Create answer history DAO.
-     * @return created answer history DAO
-     */
-    @Bean
-    public AnswerHistoryDao answerHistoryDao() {
-        return new AnswerHistoryDaoImpl();
-    }
-
-    /**
-     * Create question form manager object.
-     * @return created question form manager
-     */
-    @Bean
-    public QuestionFormManager questionFormManager() {
-        return new QuestionFormManager();
-    }
-
-    /**
-     * Create question service for controller.
-     * @return created question service
-     */
-    @Bean
-    public QuestionService questionService() {
-        return new QuestionService();
-    }
-
-    /**
      * Initialize new telegram http client for sending message.
      * @return telegram http client
      * @throws IOException if config.properties file missing
@@ -165,15 +121,6 @@ public class ApplicationConfig {
     public TelegramClient telegramClient() throws IOException {
         Properties properties = this.properties;
         return new OkHttpTelegramClient(properties.getProperty("telegram.bot.token"));
-    }
-
-    /**
-     * Initialize single thread long polling update consumer for bot
-     * @return update handler
-     */
-    @Bean
-    public LongPollingUpdateConsumer updateHandler() {
-        return new UpdateHandler();
     }
 
     /**
