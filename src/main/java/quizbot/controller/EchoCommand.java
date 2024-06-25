@@ -1,17 +1,21 @@
 package quizbot.controller;
 
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethodMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
-import quizbot.model.User;
 import reactor.core.publisher.Mono;
 
+import quizbot.model.User;
+
+@Component
 public class EchoCommand implements Command {
     /**
      * Simple echo command message handler for testing.
      */
     @Override
-    public Mono<SendMessage> reply(Message message, User user) {
+    public Mono<BotApiMethodMessage> reply(Message message, User user) {
         SendMessage reply = SendMessage
                 .builder()
                 .chatId(message.getChatId())

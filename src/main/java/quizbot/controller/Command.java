@@ -1,6 +1,6 @@
 package quizbot.controller;
 
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethodMessage;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import quizbot.model.User;
@@ -14,5 +14,5 @@ public interface Command {
      * @param user who is sending this request
      * @return generated response of request
      */
-    public Mono<SendMessage> reply(Message message, User user);
+    public Mono<BotApiMethodMessage> reply(Message message, User user);
 }
