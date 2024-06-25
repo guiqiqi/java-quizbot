@@ -20,6 +20,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.ResourceUtils;
 
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import quizbot.controller.UpdateHandler;
 import quizbot.dao.AnswerHistoryDao;
 import quizbot.dao.AnswerHistoryDaoImpl;
 import quizbot.dao.OptionDao;
@@ -33,8 +40,21 @@ import quizbot.form.QuestionFormManager;
 @Configuration
 public class ApplicationConfig {
     @Autowired
-    @Qualifier(value = "propertiesFile")
-    private String propertiesFile;
+    @Qualifier(value = "properties")
+    private Properties properties;
+
+    /**
+     * Load properties from config.properties file
+     * @return loaded properties
+     * @throws IOException if config file missing
+     */
+    @Bean(value = "properties")
+    public Properties loadProperties(@Autowired String propertiesFile) throws IOException {
+        Properties properties = new Properties();
+        File configFile = ResourceUtils.getFile(propertiesFile);
+        properties.load(new FileReader(configFile));
+        return properties;
+    }
 
     /**
      * Create data source dynamically from config properties.
@@ -43,9 +63,7 @@ public class ApplicationConfig {
      */
     @Bean
     public DataSource dataSource() throws IOException {
-        Properties properties = new Properties();
-        File configFile = ResourceUtils.getFile(this.propertiesFile);
-        properties.load(new FileReader(configFile));
+        Properties properties = this.properties;
         DriverManagerDataSource dataSource = new DriverManagerDataSource(
                 properties.getProperty("database.url"),
                 properties.getProperty("database.username"),
@@ -136,5 +154,40 @@ public class ApplicationConfig {
     @Bean
     public QuestionService questionService() {
         return new QuestionService();
+    }
+
+    /**
+     * Initialize new telegram http client for sending message.
+     * @return telegram http client
+     * @throws IOException if config.properties file missing
+     */
+    @Bean
+    public TelegramClient telegramClient() throws IOException {
+        Properties properties = this.properties;
+        return new OkHttpTelegramClient(properties.getProperty("telegram.bot.token"));
+    }
+
+    /**
+     * Initialize single thread long polling update consumer for bot
+     * @return update handler
+     */
+    @Bean
+    public LongPollingUpdateConsumer updateHandler() {
+        return new UpdateHandler();
+    }
+
+    /**
+     * Initalize telegram bot application with update message handler.
+     * @return initialized telegram bot application
+     * @param consumer autowired from updateHandler
+     * @throws TelegramApiException if error occured in registering of application
+     */
+    @Bean(value = "bot")
+    public TelegramBotsLongPollingApplication botApplication(
+            @Autowired LongPollingUpdateConsumer consumer)
+            throws TelegramApiException {
+        TelegramBotsLongPollingApplication application = new TelegramBotsLongPollingApplication();
+        application.registerBot(this.properties.getProperty("telegram.bot.token"), consumer);
+        return application;
     }
 }
