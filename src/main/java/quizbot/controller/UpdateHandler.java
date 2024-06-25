@@ -28,7 +28,8 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
             @Autowired QuestionService service,
             @Autowired EchoCommand echoCommand,
             @Autowired RandomQuestionCommand randomQuestionCommand,
-            @Autowired ClearScoreCommand clearScoreCommand) {
+            @Autowired ClearScoreCommand clearScoreCommand,
+            @Autowired QueryScoreCommand queryScoreCommand) {
         this.client = client;
         this.service = service;
         this.commands = new HashMap<>();
@@ -37,6 +38,7 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
         this.commands.put(EchoCommand.class, echoCommand);
         this.commands.put(RandomQuestionCommand.class, randomQuestionCommand);
         this.commands.put(ClearScoreCommand.class, clearScoreCommand);
+        this.commands.put(QueryScoreCommand.class, queryScoreCommand);
     }
 
     /**
@@ -54,6 +56,8 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
             command = this.commands.get(RandomQuestionCommand.class);
         else if (message.getText().equals("/clear"))
             command = this.commands.get(ClearScoreCommand.class);
+        else if (message.getText().startsWith("/score"))
+            command = this.commands.get(QueryScoreCommand.class);
         else
             command = this.commands.get(EchoCommand.class);
 

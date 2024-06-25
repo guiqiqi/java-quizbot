@@ -26,6 +26,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import quizbot.controller.ClearScoreCommand;
 import quizbot.controller.EchoCommand;
+import quizbot.controller.QueryScoreCommand;
 import quizbot.controller.RandomQuestionCommand;
 import quizbot.controller.UpdateHandler;
 import quizbot.dao.AnswerHistoryDaoImpl;
@@ -47,6 +48,7 @@ import quizbot.form.QuestionFormManager;
         EchoCommand.class,
         RandomQuestionCommand.class,
         ClearScoreCommand.class,
+        QueryScoreCommand.class,
         UpdateHandler.class
 })
 public class ApplicationConfig {

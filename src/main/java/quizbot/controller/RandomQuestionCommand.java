@@ -44,8 +44,9 @@ public class RandomQuestionCommand implements Command {
     public Mono<BotApiMethodMessage> reply(Message message, User user) {
         Optional<QuestionWithOptions> question;
         String[] commands = message.getText().split(" ");
-        if (commands.length == 1)
+        if (commands.length == 1) {
             question = this.service.randomQuestion(user);
+        }
         else {
             question = this.service.randomQuestion(user, commands[1]);
         }
