@@ -15,26 +15,69 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.ResourceUtils;
 
-import quizbot.dao.AnswerHistoryDao;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import quizbot.controller.AddQuestionCommand;
+import quizbot.controller.ClearScoreCommand;
+import quizbot.controller.EchoCommand;
+import quizbot.controller.FinishAddingQuestionCommand;
+import quizbot.controller.HelpCommand;
+import quizbot.controller.QueryScoreCommand;
+import quizbot.controller.RandomQuestionCommand;
+import quizbot.controller.UpdateHandler;
 import quizbot.dao.AnswerHistoryDaoImpl;
-import quizbot.dao.OptionDao;
 import quizbot.dao.OptionDaoImpl;
-import quizbot.dao.QuestionDao;
 import quizbot.dao.QuestionDaoImpl;
-import quizbot.dao.UserDao;
 import quizbot.dao.UserDaoImpl;
+import quizbot.form.QuestionAnsweringManager;
 import quizbot.form.QuestionFormManager;
 
 @Configuration
+@EnableScheduling
+@Import({
+        UserDaoImpl.class,
+        QuestionDaoImpl.class,
+        OptionDaoImpl.class,
+        AnswerHistoryDaoImpl.class,
+        QuestionFormManager.class,
+        QuestionAnsweringManager.class,
+        QuestionService.class,
+
+        EchoCommand.class,
+        RandomQuestionCommand.class,
+        ClearScoreCommand.class,
+        QueryScoreCommand.class,
+        HelpCommand.class,
+        AddQuestionCommand.class,
+        FinishAddingQuestionCommand.class,
+        UpdateHandler.class
+})
 public class ApplicationConfig {
     @Autowired
-    @Qualifier(value = "propertiesFile")
-    private String propertiesFile;
+    @Qualifier(value = "properties")
+    private Properties properties;
+
+    /**
+     * Load properties from config.properties file
+     * @return loaded properties
+     * @throws IOException if config file missing
+     */
+    @Bean(value = "properties")
+    public Properties loadProperties(@Autowired String propertiesFile) throws IOException {
+        Properties properties = new Properties();
+        File configFile = ResourceUtils.getFile(propertiesFile);
+        properties.load(new FileReader(configFile));
+        return properties;
+    }
 
     /**
      * Create data source dynamically from config properties.
@@ -43,9 +86,7 @@ public class ApplicationConfig {
      */
     @Bean
     public DataSource dataSource() throws IOException {
-        Properties properties = new Properties();
-        File configFile = ResourceUtils.getFile(this.propertiesFile);
-        properties.load(new FileReader(configFile));
+        Properties properties = this.properties;
         DriverManagerDataSource dataSource = new DriverManagerDataSource(
                 properties.getProperty("database.url"),
                 properties.getProperty("database.username"),
@@ -85,56 +126,23 @@ public class ApplicationConfig {
     }
 
     /**
-     * Create user DAO.
-     * @return created question DAO
+     * Initialize new telegram http client for sending message.
+     * @return telegram http client
+     * @throws IOException if config.properties file missing
      */
     @Bean
-    public UserDao userDao() {
-        return new UserDaoImpl();
+    public TelegramClient telegramClient() throws IOException {
+        Properties properties = this.properties;
+        return new OkHttpTelegramClient(properties.getProperty("telegram.bot.token"));
     }
 
-    /**
-     * Create question DAO.
-     * @return created question DAO
-     */
-    @Bean
-    public QuestionDao questionDao() {
-        return new QuestionDaoImpl();
-    }
-
-    /**
-     * Create option DAO.
-     * @return created option DAO
-     */
-    @Bean
-    public OptionDao optionDao() {
-        return new OptionDaoImpl();
-    }
-
-    /**
-     * Create answer history DAO.
-     * @return created answer history DAO
-     */
-    @Bean
-    public AnswerHistoryDao answerHistoryDao() {
-        return new AnswerHistoryDaoImpl();
-    }
-
-    /**
-     * Create question form manager object.
-     * @return created question form manager
-     */
-    @Bean
-    public QuestionFormManager questionFormManager() {
-        return new QuestionFormManager();
-    }
-
-    /**
-     * Create question service for controller.
-     * @return created question service
-     */
-    @Bean
-    public QuestionService questionService() {
-        return new QuestionService();
+    @Scheduled(cron = "0 * * * * *")
+    public void sendingRandomQuiz(
+        @Autowired TelegramClient client,
+        @Autowired RandomQuestionCommand randomQuestionCommand,
+        @Autowired QuestionService service
+    ) {
+        // TODO: enumerate all user and send them random quiz
+        System.out.println("OK");
     }
 }

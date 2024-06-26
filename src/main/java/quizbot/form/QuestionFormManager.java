@@ -70,6 +70,17 @@ public class QuestionFormManager {
     }
 
     /**
+     * Check if user is submitting a question form.
+     * @param user who is operating with bot
+     * @return if user is submitting a question form
+     */
+    public Boolean ifUserSubmittingForm(User user) {
+        if (this.forms.containsKey(user.getId()))
+            return true;
+        return false;
+    }
+
+    /**
      * Set question for given user's form.
      * @param user who is submitting request
      * @param question will be added to form
