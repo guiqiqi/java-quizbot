@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import quizbot.QuestionService;
+import quizbot.form.QuestionFormStatus;
 import quizbot.model.User;
 import reactor.core.publisher.Mono;
 
@@ -30,7 +31,9 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
             @Autowired RandomQuestionCommand randomQuestionCommand,
             @Autowired ClearScoreCommand clearScoreCommand,
             @Autowired QueryScoreCommand queryScoreCommand,
-            @Autowired HelpCommand helpCommand) {
+            @Autowired HelpCommand helpCommand,
+            @Autowired AddQuestionCommand addQuestionCommand,
+            @Autowired FinishAddingQuestionCommand finishAddingQuestionCommand) {
         this.client = client;
         this.service = service;
         this.commands = new HashMap<>();
@@ -41,6 +44,8 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
         this.commands.put(ClearScoreCommand.class, clearScoreCommand);
         this.commands.put(QueryScoreCommand.class, queryScoreCommand);
         this.commands.put(HelpCommand.class, helpCommand);
+        this.commands.put(AddQuestionCommand.class, addQuestionCommand);
+        this.commands.put(FinishAddingQuestionCommand.class, finishAddingQuestionCommand);
     }
 
     /**
@@ -51,7 +56,8 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
      * @param user is user object mapped to database who send this message to us
      */
     private void handler(Message message, User user) {
-        Command command;
+        // Command by default using echo
+        Command command = this.commands.get(EchoCommand.class);
 
         // TODO: add more commands support
         if (message.getText().startsWith("/random"))
@@ -62,8 +68,14 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
             command = this.commands.get(QueryScoreCommand.class);
         else if (message.getText().equals("/help"))
             command = this.commands.get(HelpCommand.class);
-        else
-            command = this.commands.get(EchoCommand.class);
+
+        // Check if user is adding data to question form
+        else if (this.service.ifUserSubmittingForm(user) &&
+                this.service.formStatus(user) == QuestionFormStatus.AddingWrongOptions &&
+                message.getText().equals("/finish"))
+            command = this.commands.get(FinishAddingQuestionCommand.class);
+        else if (this.service.ifUserSubmittingForm(user) || message.getText().equals("/add"))
+            command = this.commands.get(AddQuestionCommand.class);
 
         Mono<BotApiMethodMessage> reply = command.reply(message, user);
         reply.subscribe(this::sendReply);

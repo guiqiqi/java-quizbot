@@ -14,6 +14,7 @@ Welcome to polytech-quizbot, here is an instruction of how to use this bot:
 
 /help show this help message.
 /add add a new quiz.
+/finish finish adding a new quiz.
 /random start an random quiz.
 /random <tag> start an random quiz with given tag.
 /score query your current score.

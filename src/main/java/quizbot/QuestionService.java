@@ -147,6 +147,15 @@ public class QuestionService {
     }
 
     /**
+     * Check if user is submitting a question form.
+     * @param user who is operating with bot
+     * @return if user is submitting a question form
+     */
+    public Boolean ifUserSubmittingForm(User user) {
+        return this.formManager.ifUserSubmittingForm(user);
+    }
+
+    /**
      * Set data to question form during to its status.
      * @param user who is operating on question form
      * @param data its going to be set on form

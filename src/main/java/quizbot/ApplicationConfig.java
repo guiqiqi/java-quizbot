@@ -24,8 +24,10 @@ import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import quizbot.controller.AddQuestionCommand;
 import quizbot.controller.ClearScoreCommand;
 import quizbot.controller.EchoCommand;
+import quizbot.controller.FinishAddingQuestionCommand;
 import quizbot.controller.HelpCommand;
 import quizbot.controller.QueryScoreCommand;
 import quizbot.controller.RandomQuestionCommand;
@@ -51,6 +53,8 @@ import quizbot.form.QuestionFormManager;
         ClearScoreCommand.class,
         QueryScoreCommand.class,
         HelpCommand.class,
+        AddQuestionCommand.class,
+        FinishAddingQuestionCommand.class,
         UpdateHandler.class
 })
 public class ApplicationConfig {

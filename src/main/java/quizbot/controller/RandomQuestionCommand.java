@@ -72,7 +72,7 @@ public class RandomQuestionCommand implements Command {
         List<InputPollOption> options = questionWithOptions.getOptions().stream()
                 .map(option -> new InputPollOption(option.getContent()))
                 .toList();
-        String questionText = String.format("%i. %s", question.getId(), question.getContent());
+        String questionText = String.format("%d. %s", question.getId(), question.getContent());
         return SendPoll.builder().chatId(chatId).question(questionText).options(options).build();
     }
 }
