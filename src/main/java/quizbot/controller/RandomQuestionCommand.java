@@ -1,5 +1,6 @@
 package quizbot.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.polls.input.InputPollOption;
 import reactor.core.publisher.Mono;
 
 import quizbot.QuestionService;
+import quizbot.model.Option;
 import quizbot.model.Question;
 import quizbot.model.QuestionWithOptions;
 import quizbot.model.User;
@@ -38,16 +40,20 @@ public class RandomQuestionCommand implements Command {
     @Autowired
     private QuestionService service;
 
+    public static final String haveUnifinishedQuestion = "Sorry, you have unifinished quiz, please finish it before request an new one.";
     public static final String noQuestionFoundHint = "Sorry, no matching questions found :(";
 
     @Override
     public Mono<BotApiMethodMessage> reply(Message message, User user) {
+        // Check if user contains unfinished quiz
+        if (this.service.ifChatIdHaveUnfinishedQuestions(user))
+            return Mono.just(SendMessage.builder().chatId(message.getChatId()).text(haveUnifinishedQuestion).build());
+
         Optional<QuestionWithOptions> question;
         String[] commands = message.getText().split(" ");
         if (commands.length == 1) {
             question = this.service.randomQuestion(user);
-        }
-        else {
+        } else {
             question = this.service.randomQuestion(user, commands[1]);
         }
         if (question.isEmpty()) {
@@ -57,22 +63,46 @@ public class RandomQuestionCommand implements Command {
                     .build());
         } else {
             return Mono.just(this.questionWithOptions2Poll(
-                    message.getChatId(), question.get()));
+                    user, message.getChatId(), question.get()));
         }
     }
 
     /**
      * Convert QuestionWithOptions object to an Telegram Poll message.
+     * @param user is who answering quiz mapped from database
      * @param chatId is chat context id for replying correctly to user
      * @param question is question and options selected from database
      * @return made poll message
      */
-    private SendPoll questionWithOptions2Poll(Long chatId, QuestionWithOptions questionWithOptions) {
+    private SendPoll questionWithOptions2Poll(User user, Long chatId, QuestionWithOptions questionWithOptions) {
         Question question = questionWithOptions.getQuestion();
-        List<InputPollOption> options = questionWithOptions.getOptions().stream()
+        List<Option> options = questionWithOptions.getOptions();
+        Collections.shuffle(options);
+        List<InputPollOption> inputOptions = options.stream()
                 .map(option -> new InputPollOption(option.getContent()))
                 .toList();
+        Integer correctOptionId = 0;
+        for (; correctOptionId < options.size(); correctOptionId++) {
+            if (options.get(correctOptionId).getCorrectness())
+                break;
+        }
         String questionText = String.format("%d. %s", question.getId(), question.getContent());
-        return SendPoll.builder().chatId(chatId).question(questionText).options(options).build();
+        SendPoll poll = SendPoll.builder().chatId(chatId)
+                .type("quiz")
+                .correctOptionId(correctOptionId)
+                .question(questionText)
+                .options(inputOptions)
+                .protectContent(true)
+                .isAnonymous(false)
+                .openPeriod(10)
+                .build();
+
+        // Update current answering question record in memory
+        this.service.updateAnsweringQuestion(
+                user,
+                question.getId(),
+                options.stream().map(option -> option.getId()).toList());
+
+        return poll;
     }
 }

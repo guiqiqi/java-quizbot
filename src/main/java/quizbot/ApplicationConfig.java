@@ -36,6 +36,7 @@ import quizbot.dao.AnswerHistoryDaoImpl;
 import quizbot.dao.OptionDaoImpl;
 import quizbot.dao.QuestionDaoImpl;
 import quizbot.dao.UserDaoImpl;
+import quizbot.form.QuestionAnsweringManager;
 import quizbot.form.QuestionFormManager;
 
 @Configuration
@@ -45,9 +46,9 @@ import quizbot.form.QuestionFormManager;
         OptionDaoImpl.class,
         AnswerHistoryDaoImpl.class,
         QuestionFormManager.class,
+        QuestionAnsweringManager.class,
         QuestionService.class,
 
-        // TODO: add more commands support
         EchoCommand.class,
         RandomQuestionCommand.class,
         ClearScoreCommand.class,

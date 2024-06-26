@@ -1,6 +1,7 @@
 package quizbot.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,12 @@ import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateC
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethodMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import quizbot.QuestionService;
+import quizbot.form.AnsweringRecord;
 import quizbot.form.QuestionFormStatus;
 import quizbot.model.User;
 import reactor.core.publisher.Mono;
@@ -38,7 +41,6 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
         this.service = service;
         this.commands = new HashMap<>();
 
-        // TODO: add more commands support
         this.commands.put(EchoCommand.class, echoCommand);
         this.commands.put(RandomQuestionCommand.class, randomQuestionCommand);
         this.commands.put(ClearScoreCommand.class, clearScoreCommand);
@@ -59,7 +61,6 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
         // Command by default using echo
         Command command = this.commands.get(EchoCommand.class);
 
-        // TODO: add more commands support
         if (message.getText().startsWith("/random"))
             command = this.commands.get(RandomQuestionCommand.class);
         else if (message.getText().equals("/clear"))
@@ -90,6 +91,22 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
             Message message = update.getMessage();
             User user = this.localizeUser(message.getFrom());
             this.handler(message, user);
+        }
+        if (update.hasPollAnswer()) {
+            PollAnswer answer = update.getPollAnswer();
+            User user = this.localizeUser(answer.getUser());
+
+            // Check if user is answering question
+            if (!this.service.ifChatIdHaveUnfinishedQuestions(user))
+                return;
+
+            // Get question and options id mapped to database
+            AnsweringRecord record = this.service.getAnsweringQuestion(user);
+            List<Integer> optionIds = answer.getOptionIds().stream().map(
+                    optionIdInTelegram -> record.getOptionIds().get(optionIdInTelegram)).toList();
+
+            // Store answering record to database
+            optionIds.forEach(optionId -> this.service.answerQuestion(user, record.getQuestionId(), optionId));
         }
     }
 

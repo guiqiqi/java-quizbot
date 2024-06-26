@@ -14,6 +14,8 @@ import quizbot.dao.AnswerHistoryDao;
 import quizbot.dao.OptionDao;
 import quizbot.dao.QuestionDao;
 import quizbot.dao.UserDao;
+import quizbot.form.AnsweringRecord;
+import quizbot.form.QuestionAnsweringManager;
 import quizbot.form.QuestionForm;
 import quizbot.form.QuestionFormManager;
 import quizbot.form.QuestionFormStatus;
@@ -40,6 +42,9 @@ public class QuestionService {
 
     @Autowired
     private QuestionFormManager formManager;
+
+    @Autowired
+    QuestionAnsweringManager answeringManager;
 
     /**
      * Find user by its telegram id or create a new one.
@@ -153,6 +158,34 @@ public class QuestionService {
      */
     public Boolean ifUserSubmittingForm(User user) {
         return this.formManager.ifUserSubmittingForm(user);
+    }
+
+    /**
+     * Check if user chat contains unfinished (not answered) quiz
+     * @param user is who answering quiz mapped from database
+     * @return true if have, otherwise false
+     */
+    public Boolean ifChatIdHaveUnfinishedQuestions(User user) {
+        return this.answeringManager.ifChatIdHaveUnfinishedQuestions(user);
+    }
+
+    /**
+     * Update user current answering question record.
+     * @param user is who answering quiz mapped from database
+     * @param questionId is question id from database
+     * @param optionIds is all options id from database
+     */
+    public void updateAnsweringQuestion(User user, Integer questionId, List<Integer> optionIds) {
+        this.answeringManager.updateQuestion(user, questionId, optionIds);
+    }
+
+    /**
+     * Check answered quiz result and remove record from manager.
+     * @param user is who answering quiz mapped from database
+     * @return AnsweringRecord with quiz questionId and optionIds in database
+     */
+    public AnsweringRecord getAnsweringQuestion(User user) {
+        return this.answeringManager.answerQuestion(user);
     }
 
     /**
