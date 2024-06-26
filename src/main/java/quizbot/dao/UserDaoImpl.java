@@ -1,5 +1,6 @@
 package quizbot.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import java.sql.Statement;
@@ -44,5 +45,12 @@ public class UserDaoImpl implements UserDao {
         } catch (DataAccessException error) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<User> listAllUsers() {
+        String query = "SELECT * FROM Users";
+        RowMapper<User> mapper = new BeanPropertyRowMapper<>(User.class);
+        return this.template.query(query, mapper);
     }
 }

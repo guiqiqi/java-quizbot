@@ -1,5 +1,6 @@
 package quizbot.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import quizbot.model.User;
@@ -14,9 +15,15 @@ public interface UserDao {
     User create(String telegram, String nickname);
 
     /**
-     * Find user by its telegram id
+     * Find user by its telegram id.
      * @param telegram is user's telegram id
      * @return Optional<User> of found User object
      */
     Optional<User> findByTelegram(String telegram);
+
+    /**
+     * Enumerate all users.
+     * @return list of User object
+     */
+    List<User> listAllUsers();
 }

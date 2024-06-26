@@ -189,6 +189,14 @@ public class QuestionService {
     }
 
     /**
+     * Enumerate all users.
+     * @return list of User object
+     */
+    public List<User> listAllUsers() {
+        return this.userDao.listAllUsers();
+    }
+
+    /**
      * Set data to question form during to its status.
      * @param user who is operating on question form
      * @param data its going to be set on form
