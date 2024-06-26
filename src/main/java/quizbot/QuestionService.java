@@ -134,7 +134,7 @@ public class QuestionService {
      * @return created answer history if question and option found, otherwise nothing
      */
     public Optional<AnswerHistory> answerQuestion(User user, Integer questionId, Integer optionId) {
-        Optional<Question> question = this.questionDao.findById(optionId);
+        Optional<Question> question = this.questionDao.findById(questionId);
         Optional<Option> option = this.optionDao.findById(optionId);
         if (question.isEmpty() || option.isEmpty())
             return Optional.empty();
