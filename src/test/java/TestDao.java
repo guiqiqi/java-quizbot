@@ -60,6 +60,8 @@ public class TestDao {
             "final test");
     public static final Map<String, Boolean> optionsForFirstQuestion = Map.of(
             "Bangkok", true, "Bangdik", false, "Bangpusi", false, "Bangtits", false);
+            
+    public static Integer questionID = 1;
 
     @Test
     @Order(1)
@@ -77,6 +79,7 @@ public class TestDao {
             Integer id = questionDao.create(questionTag, content, user).getId();
             Question question = questionDao.findById(id).get();
             assertEquals(id, question.getId());
+            questionID = question.getId();
         }
     }
 
@@ -99,7 +102,7 @@ public class TestDao {
     @Test
     @Order(5)
     public void testCreateOptions() {
-        Question question = questionDao.findById(1).get();
+        Question question = questionDao.findById(questionID).get();
         for (String optionText : optionsForFirstQuestion.keySet()) {
             Boolean correctness = optionsForFirstQuestion.get(optionText);
             Integer id = optionDao.create(optionText, 1, correctness, question).getId();
@@ -111,7 +114,7 @@ public class TestDao {
     @Test
     @Order(6)
     public void testListOptions() {
-        Question question = questionDao.findById(1).get();
+        Question question = questionDao.findById(questionID).get();
         List<Option> options = optionDao.listByQuestion(question);
         assertEquals(options.size(), optionsForFirstQuestion.size());
     }
@@ -120,7 +123,7 @@ public class TestDao {
     @Order(7)
     public void testCreateAnswerHistory() {
         User user = userDao.findByTelegram(userTelegramId).get();
-        Question question = questionDao.findById(1).get();
+        Question question = questionDao.findById(questionID).get();
         List<Option> options = optionDao.listByQuestion(question);
         for (Integer index = 0; index < options.size(); index++)
             answerHistoryDao.create(user, question, options.get(index));
@@ -146,7 +149,7 @@ public class TestDao {
             while (resultSet.next())
                 tables.add(resultSet.getString(1));
             for (String table : tables) {
-                statement.execute("DROP TABLE " + table);
+                statement.execute("DELETE FROM " + table);
             }
         }
     }

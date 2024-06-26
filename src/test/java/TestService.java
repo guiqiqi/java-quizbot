@@ -47,6 +47,9 @@ public class TestService {
     public static final String correctOption = "Bangkok";
     public static final List<String> wrongOptions = List.of("Bangdik", "Bangpusi", "Bangtits");
 
+    public static Integer questionId = 0;
+    public static Integer correctOptionId = 0;
+
     @Test
     @Order(1)
     public void testCreateUser() {
@@ -89,6 +92,9 @@ public class TestService {
         Optional<QuestionWithOptions> createdQuestion = this.service.submitQuestionForm(user);
         assertTrue(createdQuestion.isPresent());
         assertEquals(createdQuestion.get().getQuestion().getContent(), questionText);
+
+        questionId = createdQuestion.get().getQuestion().getId();
+        correctOptionId = createdQuestion.get().getOptions().get(0).getId();
     }
 
     @Test
@@ -103,7 +109,7 @@ public class TestService {
     @Order(5)
     public void testAnswerQuestion() {
         User user = this.service.ensureUser(userTelegramId, userTelegramNickname);
-        Optional<AnswerHistory> hitsory = this.service.answerQuestion(user, 1, 1);
+        Optional<AnswerHistory> hitsory = this.service.answerQuestion(user, questionId, correctOptionId);
         assertTrue(hitsory.isPresent());
     }
 
@@ -154,7 +160,7 @@ public class TestService {
             while (resultSet.next())
                 tables.add(resultSet.getString(1));
             for (String table : tables) {
-                statement.execute("DROP TABLE " + table);
+                statement.execute("DELETE FROM " + table);
             }
         }
     }
