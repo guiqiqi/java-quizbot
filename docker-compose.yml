@@ -1,0 +1,13 @@
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: quizbot
+    ports:
+      - "3306:3306"
+  quizbot:
+    build: .
+    network_mode: "host"
+    depends_on:
+      - mysql
