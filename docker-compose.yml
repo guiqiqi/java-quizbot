@@ -9,5 +9,7 @@ services:
   quizbot:
     build: .
     network_mode: "host"
+    volumes:
+      - "./src/main/resources/config.properties:/app/target/classes/config.properties"
     depends_on:
       - mysql

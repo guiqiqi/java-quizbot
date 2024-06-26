@@ -27,13 +27,13 @@ This project supports deployment using `docker-compose` or just Dockerfile if yo
 2. **Deploy using Dockerfile** (Requires configuring MySQL server):
    ```
    docker build -t quiz-bot .
-   docker run -d quiz-bot -v /app/src/main/resources:<your config directory>
+   docker run -d quiz-bot -v <your config file path>:/app/target/classes/config.properties
    ```
    You will need to modify your config file before booting up Docker container, detail listed below.
 
 ### Configuration File
 
-Before deploying, ensure the `/app/src/main/resources/config.properties` file is correctly configured:
+Before deploying, ensure the `config.properties` file is correctly configured:
 
 ```
 database.driver = com.mysql.cj.jdbc.Driver
