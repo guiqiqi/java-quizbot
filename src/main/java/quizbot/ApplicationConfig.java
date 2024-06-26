@@ -130,6 +130,7 @@ public class ApplicationConfig {
      * @throws IOException if config.properties file missing
      */
     @Bean
+    @Profile("production")
     public TelegramClient telegramClient() throws IOException {
         Properties properties = this.properties;
         return new OkHttpTelegramClient(properties.getProperty("telegram.bot.token"));

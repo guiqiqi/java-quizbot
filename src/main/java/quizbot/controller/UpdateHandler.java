@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -22,6 +23,7 @@ import quizbot.model.User;
 import reactor.core.publisher.Mono;
 
 @Controller
+@Profile("production")
 public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
     private TelegramClient client;
     private QuestionService service;

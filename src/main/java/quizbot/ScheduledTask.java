@@ -3,16 +3,17 @@ package quizbot;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.polls.SendPoll;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import quizbot.controller.RandomQuestionCommand;
 import quizbot.controller.UpdateHandler;
 import quizbot.model.QuestionWithOptions;
 
 @Service
+@Profile("production")
 public class ScheduledTask {
     @Autowired
     private RandomQuestionCommand randomQuestionCommand;
