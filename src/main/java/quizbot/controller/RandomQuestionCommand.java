@@ -74,7 +74,7 @@ public class RandomQuestionCommand implements Command {
      * @param question is question and options selected from database
      * @return made poll message
      */
-    private SendPoll questionWithOptions2Poll(User user, Long chatId, QuestionWithOptions questionWithOptions) {
+    public SendPoll questionWithOptions2Poll(User user, Long chatId, QuestionWithOptions questionWithOptions) {
         Question question = questionWithOptions.getQuestion();
         List<Option> options = questionWithOptions.getOptions();
         Collections.shuffle(options);

@@ -114,7 +114,7 @@ public class UpdateHandler implements LongPollingSingleThreadUpdateConsumer {
      * Send reply back to telegram server.
      * @param reply generated from command handler
      */
-    private void sendReply(BotApiMethodMessage reply) {
+    public void sendReply(BotApiMethodMessage reply) {
         try {
             client.execute(reply);
         } catch (TelegramApiException e) {
