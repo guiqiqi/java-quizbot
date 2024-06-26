@@ -19,7 +19,7 @@ public class EchoCommand implements Command {
         SendMessage reply = SendMessage
                 .builder()
                 .chatId(message.getChatId())
-                .text(String.format("%s: %s", user.getId(), message.getText()))
+                .text(String.format("%s", message.getText()))
                 .build();
         return Mono.just(reply);
     }
