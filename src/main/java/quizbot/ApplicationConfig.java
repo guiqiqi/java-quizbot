@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.ResourceUtils;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -40,6 +42,7 @@ import quizbot.form.QuestionAnsweringManager;
 import quizbot.form.QuestionFormManager;
 
 @Configuration
+@EnableScheduling
 @Import({
         UserDaoImpl.class,
         QuestionDaoImpl.class,
@@ -131,5 +134,15 @@ public class ApplicationConfig {
     public TelegramClient telegramClient() throws IOException {
         Properties properties = this.properties;
         return new OkHttpTelegramClient(properties.getProperty("telegram.bot.token"));
+    }
+
+    @Scheduled(cron = "0 * * * * *")
+    public void sendingRandomQuiz(
+        @Autowired TelegramClient client,
+        @Autowired RandomQuestionCommand randomQuestionCommand,
+        @Autowired QuestionService service
+    ) {
+        // TODO: enumerate all user and send them random quiz
+        System.out.println("OK");
     }
 }
