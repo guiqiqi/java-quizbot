@@ -1,0 +1,5 @@
+.git
+target
+images
+**/*.properties
+**/.DS_Store
