@@ -86,7 +86,7 @@ public class RandomQuestionCommand implements Command {
             if (options.get(correctOptionId).getCorrectness())
                 break;
         }
-        String questionText = String.format("%d. %s", question.getId(), question.getContent());
+        String questionText = String.format("(%s) %s", question.getTag(), question.getContent());
         SendPoll poll = SendPoll.builder().chatId(chatId)
                 .type("quiz")
                 .correctOptionId(correctOptionId)
