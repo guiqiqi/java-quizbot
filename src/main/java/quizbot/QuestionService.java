@@ -248,10 +248,13 @@ public class QuestionService {
             // The very first option is the correct one
             String option = options.get(index);
             Option creadtedOption;
+
+            // If correctness is false, score should be 0 but not 1
             if (index == 0)
                 creadtedOption = this.optionDao.create(option, 1, true, question);
             else
-                creadtedOption = this.optionDao.create(option, 1, false, question);
+                creadtedOption = this.optionDao.create(option, 0, false, question);
+            
             createdOptions.add(creadtedOption);
         }
 
