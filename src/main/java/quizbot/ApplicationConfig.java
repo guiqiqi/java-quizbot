@@ -1,11 +1,13 @@
 package quizbot;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -73,8 +75,13 @@ public class ApplicationConfig {
     @Bean(value = "properties")
     public Properties loadProperties(@Autowired String propertiesFile) throws IOException {
         Properties properties = new Properties();
-        File configFile = ResourceUtils.getFile(propertiesFile);
-        properties.load(new FileReader(configFile));
+        String resourcePath = propertiesFile.replace("classpath:", "");
+        try (InputStream inputStream = ApplicationConfig.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (inputStream == null) {
+                throw new IOException("Cannot find resource: " + resourcePath);
+            }
+            properties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+        }
         return properties;
     }
 
@@ -115,12 +122,19 @@ public class ApplicationConfig {
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) throws IOException {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        File sqlFile = ResourceUtils.getFile("classpath:schema.sql");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(sqlFile)));
-        String schema = reader.lines().collect(Collectors.joining("\n"));
-        reader.close();
-        for (String query : schema.split(";"))
-            jdbcTemplate.execute(query);
+        try (InputStream inputStream = ApplicationConfig.class.getClassLoader().getResourceAsStream("schema.sql")) {
+            if (inputStream == null) {
+                throw new IOException("Cannot find resource: schema.sql");
+            }
+            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                String schema = new BufferedReader(reader).lines().collect(Collectors.joining("\n"));
+                for (String query : schema.split(";")) {
+                    if (!query.trim().isEmpty()) {
+                        jdbcTemplate.execute(query);
+                    }
+                }
+            }
+        }
         return jdbcTemplate;
     }
 
